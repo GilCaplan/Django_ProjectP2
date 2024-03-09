@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+<link rel="stylesheet" href="{% static 'style.css' %}">
+<head>
+    <meta charset="UTF-8">
+    <title>Add Transaction</title>
+</head>
+<body>
+    <h2>Make your Transactions here!</h2>
+    <a href="{% url 'index' %}">Home Page</a>
+    <br>
+    <a href="{% url 'Buy_Stocks' %}">Buy Stocks</a>
+    <br>
+    <a href="{% url 'Query_results' %}">Query Results</a></body>
+</html>

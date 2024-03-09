@@ -1,0 +1,18 @@
+body{
+    background-color: lightblue;
+}
+
+h1{
+    color: crimson;
+}
+
+h2{
+    color: darkslategrey;
+}
+
+.rectangle{
+    background-color: deepskyblue;
+    text-align: center;
+    border: 6px outset black;
+    width: 500px;
+}
