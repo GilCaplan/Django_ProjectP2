@@ -76,19 +76,19 @@ WSGI_APPLICATION = 'djangoProject1.wsgi.application'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-    # 'default': {
-    #    'ENGINE': 'mssql',
-    #   'NAME': BASE_DIR / 'gil0caplan',
-    #  'USER': 'gil0caplan',
-    # 'PASSWORD': 'QWERTY12!',
-    # 'HOST': 'techniondbcourse01.database.windows.net',
-    #'PORT': '1433',
-    #'OPTIONS': {"driver": "ODBC Driver 17 for SQL"}
+    #'default': {
+     #   'ENGINE': 'django.db.backends.sqlite3',
+      #  'NAME': BASE_DIR / 'db.sqlite3',
     #}
+    'default': {
+        'ENGINE': 'mssql',
+        'NAME': 'raquelgol',
+        'USER': 'raquelgol',
+        'PASSWORD': 'Qwerty12!',
+        'HOST': 'techniondbcourse01.database.windows.net',
+        'PORT': '1433',
+        'OPTIONS': {"driver": "ODBC Driver 18 for SQL"}
+    }
 }
 
 
