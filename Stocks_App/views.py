@@ -2,6 +2,8 @@ from django.shortcuts import render, redirect
 from .models import Transactions, Stock, Buying, Company, Investor
 from django.db import connection
 from django import forms
+from django.db.models import Max
+
 # Create your views here.
 
 
@@ -37,40 +39,38 @@ def Add_Transaction(request):
     return render(request, 'Add_Transaction.html', {'recent_transactions': recent_transactions})
 
 
-class BuyStockForm(forms.Form):
-    ID = forms.IntegerField()
-    Company = forms.CharField()
-    BQuantity = forms.IntegerField()
-
-
 def Buy_Stocks(request):
     ID = request.POST.get('id')
     symbol = request.POST.get('company')
     BQuantity = request.POST.get('quantity')
+    action = Buying.objects.order_by('-tdate')[:10]
+
     if ID is None or Company is None or BQuantity is None or not Investor.objects.filter(id=ID).exists() or not Company.objects.filter(symbol=symbol).exists() or int(BQuantity) <= 0:
-        return render(request, 'buy_stocks.html', {'recent_transactions': Buying.objects.order_by('-tdate')[:10]})
+        return render(request, 'buy_stocks.html', {'recent_transactions': action})
     company = Company.objects.get(pk=symbol)
-    date = Stock.objects.latest('tdate').tdate
+    date = Stock.objects.order_by('-tdate').first().tdate
     try:
         stock = Stock.objects.get(symbol=company.symbol, tdate=date)
         price = stock.price
-        bQuantity = int(BQuantity)
     except Stock.DoesNotExist:
-        # Handle the case where the specified stock record does not exist
         price = 0
-        bQuantity = 0
-    if Investor.objects.get(id=ID).amount < price * bQuantity:
-        error_message = "Not enough funds"
-        return render(request, 'buy_stocks.html', {"error_message": error_message}, {'recent_transactions': Buying.objects.order_by('-tdate')[:10]})
     if Buying.objects.filter(id=ID, symbol=symbol, tdate=date).exists():
         error_message = "Investor cannot make multiple purchases for the same company on the same day"
-        return render(request, 'buy_stocks.html', {'error_message': error_message}, {'recent_transactions': Buying.objects.order_by('-tdate')[:10]})
+        return render(request, 'buy_stocks.html', {'error_message': error_message, 'recent_transactions': action})
     investor = Investor._default_manager.get(id=ID)
-    investor.amount -= price * int(BQuantity)
+    investor.amount = price * int(BQuantity)
     investor.save()
-    purchase = Buying(bquantity=BQuantity, id=investor, symbol=stock, tdate=stock)
+
+    purchase = Buying()
+    purchase.bquantity = BQuantity
+    purchase.id = investor
+    purchase.pk = Stock.objects.get(symbol=company.symbol, tdate=date).pk
+    purchase.tdate_id = date
+    purchase.symbol_id = company
+
+    purchase.symbol = Stock(symbol=Company.objects.get(pk=symbol))
     purchase.save()
-    return render(request, 'buy_stocks.html', {'recent_transactions': Buying.objects.order_by('-tdate')[:10]})
+    return render(request, 'buy_stocks.html', {'recent_transactions': action})
 
 def Query_results(request):
     with connection.cursor () as cursor:
@@ -81,43 +81,35 @@ def Query_results(request):
 
         #Query a
         cursor.execute("""
-            SELECT Investor.Name AS Investor_Name, ROUND(SUM(Buying.BQuantity * Stock.Price), 3) AS Total_Amount
-            FROM Buying
-            JOIN Company ON Buying.Symbol = Company.Symbol
-            JOIN Investor ON Buying.ID = Investor.ID
-            JOIN Stock ON Buying.Symbol = Stock.Symbol AND Buying.tDate = Stock.tDate
-            JOIN (
-                SELECT Buying.ID, Buying.tDate
-                FROM Buying
-                JOIN Company ON Buying.Symbol = Company.Symbol
-                GROUP BY Buying.ID, Buying.tDate
-                HAVING COUNT(DISTINCT Company.Sector) >= 6
-            ) AS DiverseInvestors ON Buying.ID = DiverseInvestors.ID AND Buying.tDate = DiverseInvestors.tDate
-            GROUP BY Investor.ID, Investor.Name
-            ORDER BY Total_Amount DESC;
+            SELECT VarInv.Name, ROUND(SUM(Buying.BQuantity * Stock.Price), 3) AS spent
+            FROM VarInv, Buying, Stock, Investor
+            WHERE VarInv.Name = Investor.Name AND Investor.ID = Buying.ID
+            AND Stock.Symbol = Buying.Symbol
+            GROUP BY VarInv.Name
+            ORDER BY spent DESC;
         """)
         query_result_a = dictfetchall(cursor)
 
         #Query b
         cursor.execute("""
-            SELECT popQuantity.Symbol AS Symbol, popQuantity.ID, Investor.Name as Name, popQuantity.quantity as Quantity
-            FROM popQuantity, Investor
-            WHERE popQuantity.ID = Investor.ID AND InvestorRank = 1
-            ORDER BY popQuantity.Symbol
+        SELECT popQuantity.Symbol AS Symbol, Investor.Name as Name, popQuantity.quantity as Quantity
+        FROM popQuantity, Investor
+        WHERE popQuantity.ID = Investor.ID AND InvestorRank = 1
+        ORDER BY popQuantity.Symbol
         """)
 
         query_result_b = dictfetchall(cursor)
 
         #Query c
         cursor.execute("""
-            SELECT Company.Symbol, COUNT(DISTINCT Buying.ID) AS distinct_id_count
-            FROM Company, Stock st1, Stock st2, Buying
-            WHERE Company.Symbol = st1.Symbol AND Company.Symbol = st2.Symbol
-            AND Buying.Symbol = Company.Symbol AND Buying.tDate = (SELECT MIN (tDate) FROM StockDays)
-            AND st1.tDate = (SELECT MIN(tDate) FROM StockDays) AND st2.tDate = (SELECT MAX(tDate) FROM StockDays)
-            AND st1.Price * 0.06 < st2.Price
+            SELECT Company.Symbol AS Symbol, COUNT(DISTINCT Buying.ID) as BuyersNumber
+            FROM Company
+            JOIN Stock st1 ON Company.Symbol = st1.Symbol AND st1.tDate = (SELECT MIN(tDate) FROM StockDays)
+            JOIN Stock st2 ON Company.Symbol = st2.Symbol AND st2.tDate = (SELECT MAX(tDate) FROM StockDays)
+            LEFT JOIN Buying ON Buying.Symbol = Company.Symbol AND Buying.tDate = (SELECT MIN(tDate) FROM StockDays)
+            WHERE st1.Price * 1.06 < st2.Price
             GROUP BY Company.Symbol
-            ORDER BY Company.Symbol
+            ORDER BY Company.Symbol;
         """)
 
         query_result_c = dictfetchall(cursor)

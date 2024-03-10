@@ -38,21 +38,22 @@
 
     <br><br>
     <h2>Last 10 Buying Actions</h2>
-    <table>
+    <!-- Corrected template code -->
+<table>
+    <tr>
+        <th>Date</th>
+        <th>Investor ID</th>
+        <th>Symbol</th>
+        <th>Quantity</th>
+    </tr>
+    {% for action in recent_transactions %}
         <tr>
-            <th>Investor</th>
-            <th>Company</th>
-            <th>Shares</th>
-            <th>Date</th>
+            <td>{{ action.pk }}</td>
+            <td>{{ action.id.id }}</td>
+            <td>{{ action.symbol_id }}</td>
+            <td>{{ action.bquantity }}</td>
         </tr>
-        {% for action in recent_transactions %}
-            <tr>
-                <td>{{ action.investor }}</td>
-                <td>{{ action.company }}</td>
-                <td>{{ action.shares }}</td>
-                <td>{{ action.date }}</td>
-            </tr>
-        {% endfor %}
-    </table>
+    {% endfor %}
+</table>
 </body>
 </html>

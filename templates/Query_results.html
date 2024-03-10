@@ -20,13 +20,13 @@
         <tbody>
             {% for result in query_result_a %}
                 <tr>
-                    <td>{{ result.Investor_Name }}</td>
-                    <td>{{ result.Total_Amount}}</td>
+                    <td>{{ result.Name }}</td>
+                    <td>{{ result.spent}}</td>
                 </tr>
             {% endfor %}
         </tbody>
     </table>
-
+    <br><br>
     <table>
         <caption>Query 2:</caption>
         <thead>
@@ -41,11 +41,12 @@
                 <tr>
                     <td>{{ result.Symbol }}</td>
                     <td>{{ result.Name }}</td>
+                    <td>{{ result.Quantity }}</td>
                 </tr>
             {% endfor %}
         </tbody>
     </table>
-
+    <br><br>
     <table>
         <caption>Query 3:</caption>
         <thead>
@@ -57,12 +58,13 @@
         <tbody>
             {% for result in query_result_c %}
                 <tr>
-                    <td>{{ result.distinct_id_count }}</td>
+                    <td>{{ result.Symbol }}</td>
+                    <td>{{ result.BuyersNumber }}</td>
                 </tr>
             {% endfor %}
         </tbody>
     </table>
-
+    <br><br>
     <a href="{% url 'index' %}">Home Page</a><br>
     <a href="{% url 'Add_Transaction' %}">Add Transaction</a><br>
     <a href="{% url 'Buy_Stocks' %}">Buy Stocks</a>
