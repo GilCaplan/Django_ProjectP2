@@ -42,37 +42,35 @@ class BuyStockForm(forms.Form):
     Company = forms.CharField()
     BQuantity = forms.IntegerField()
 
+
 def Buy_Stocks(request):
-    if request.method == 'POST':
-        form = BuyStockForm(request.POST)
-        if form.is_valid():
-            ID = form.cleaned_data['ID']
-            Company = form.cleaned_data['Company']
-            BQuantity = form.cleaned_data['BQuantity']
-
-            investor = Investor.objects.get(pk=ID)
-            company = Company.objects.get(pk=Company)
-            stock_object = Stock.objects.latest('tdate')
-
-            if investor.amount < stock_object.price * BQuantity:
-                error_message = "Not enough founds"
-                return render(request, 'buy_stocks.html', {'form':form, 'error_message': error_message})
-            if Buying.objects.filter(ID=ID, Company=Company, date=stock_object.date).exists():
-                error_message = "Investor cannot make multiple purchases for the same company on the same day"
-                return render(request, 'buy_stocks.html', {'form':form, 'error_message': error_message})
-
-            investor.amount -= stock_object.price *BQuantity
-            investor.save()
-
-            Buying.objects.create(ID=ID, Company=Company, BQuantity=BQuantity)
-
-            return render(request, 'buy_stocks.html', {'form': form, 'success_message': 'Purchased Successfully'})
-
-    else:
-        form = BuyStockForm()
-
-    return render(request, 'buy_stocks.html', {'form': form})
-
+    ID = request.POST.get('id')
+    symbol = request.POST.get('company')
+    BQuantity = request.POST.get('quantity')
+    if ID is None or Company is None or BQuantity is None or not Investor.objects.filter(id=ID).exists() or not Company.objects.filter(symbol=symbol).exists() or int(BQuantity) <= 0:
+        return render(request, 'buy_stocks.html', {'recent_transactions': Buying.objects.order_by('-tdate')[:10]})
+    company = Company.objects.get(pk=symbol)
+    date = Stock.objects.latest('tdate').tdate
+    try:
+        stock = Stock.objects.get(symbol=company.symbol, tdate=date)
+        price = stock.price
+        bQuantity = int(BQuantity)
+    except Stock.DoesNotExist:
+        # Handle the case where the specified stock record does not exist
+        price = 0
+        bQuantity = 0
+    if Investor.objects.get(id=ID).amount < price * bQuantity:
+        error_message = "Not enough funds"
+        return render(request, 'buy_stocks.html', {"error_message": error_message}, {'recent_transactions': Buying.objects.order_by('-tdate')[:10]})
+    if Buying.objects.filter(id=ID, symbol=symbol, tdate=date).exists():
+        error_message = "Investor cannot make multiple purchases for the same company on the same day"
+        return render(request, 'buy_stocks.html', {'error_message': error_message}, {'recent_transactions': Buying.objects.order_by('-tdate')[:10]})
+    investor = Investor._default_manager.get(id=ID)
+    investor.amount -= price * int(BQuantity)
+    investor.save()
+    purchase = Buying(bquantity=BQuantity, id=investor, symbol=stock, tdate=stock)
+    purchase.save()
+    return render(request, 'buy_stocks.html', {'recent_transactions': Buying.objects.order_by('-tdate')[:10]})
 
 def Query_results(request):
     with connection.cursor () as cursor:
