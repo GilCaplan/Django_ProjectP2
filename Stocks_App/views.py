@@ -12,18 +12,18 @@ def errorPage(request):
 
 
 def Add_Transaction(request):
-    input_ID = request.POST.get('id')
+    input_ID = request.POST.get('ID')
 
-    if not Transactions.objects.filter(ID=input_ID).exists():
+    if input_ID is not None and not Transactions.objects.filter(ID=input_ID).exists():
         return render(request, 'errorPage.html')  # Create a template for id_exists_error.html
+    if input_ID is not None:
+        # If the ID doesn't exist, create a new transaction
+        transaction = Transactions()
+        transaction.id_id = input_ID
+        transaction.tamount = request.POST.get('transactionSum')
+        transaction.save()
 
-    # If the ID doesn't exist, create a new transaction
-    transaction = Transactions()
-    transaction.id = input_ID
-    transaction.tamount = request.POST.get('transactionSum')
-    transaction.save()
-
-    recent_transactions = Transactions.objects.order_by('-tDate')[:10]
+    recent_transactions = Transactions.objects.order_by('-tdate')[:10]
     return render(request, 'Add_Transaction.html', {'recent_transactions': recent_transactions})
 
 

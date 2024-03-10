@@ -9,15 +9,16 @@ from django.db import models
 
 
 class Buying(models.Model):
-    tdate = models.OneToOneField('Stock', models.DO_NOTHING, db_column='tDate', primary_key=True)  # Field name made lowercase. The composite primary key (tDate, ID, Symbol) found, that is not supported. The first column is selected.
-    id = models.ForeignKey('Investor', models.DO_NOTHING, db_column='ID')  # Field name made lowercase.
-    symbol = models.ForeignKey('Stock', models.DO_NOTHING, db_column='Symbol', to_field='tDate', related_name='buying_symbol_set')  # Field name made lowercase.
-    bquantity = models.IntegerField(db_column='BQuantity', blank=True, null=True)  # Field name made lowercase.
+    tdate = models.OneToOneField('Stock', models.DO_NOTHING, db_column='tDate', primary_key=True)
+    id = models.ForeignKey('Investor', models.DO_NOTHING, db_column='ID')
+    symbol = models.ForeignKey('Stock', models.DO_NOTHING, db_column='Symbol', to_field='symbol', related_name='buying_symbol_set')
+    bquantity = models.IntegerField(db_column='BQuantity', blank=True, null=True)
 
     class Meta:
         managed = False
         db_table = 'Buying'
         unique_together = (('tdate', 'id', 'symbol'),)
+
 
 
 class Company(models.Model):
