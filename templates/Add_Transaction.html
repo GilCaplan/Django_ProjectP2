@@ -7,13 +7,36 @@
     <title>Add Transaction</title>
 </head>
 <body>
-<form method="POST"> 
-    ID: <input type="text" ID="123456"><br>
-    
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transaction Form</title>
+</head>
+<body>
+<h2>Make your Transactions here!</h2>
+<form method="POST" action="Add_Transaction">
+    {% csrf_token %}
+    <label for="id">ID:</label>
+    <input type="text" id="id" name="id" placeholder="Enter your ID" required><br>
+    <label for="transactionSum">Transaction Sum:</label>
+    <input type="number" id="transactionSum" name="transactionSum" placeholder="Enter amount" required><br>
+    <input type="submit" value="Submit">
 </form>
+
+</body>
+</html>
+
 </body>
 <body>
-    <h2>Make your Transactions here!</h2>
+    <h2>Top 10 Most Recent Transactions</h2>
+    <ul>
+      {% for transaction in recent_transactions %}
+        <li>{{ transaction.tDate }} - ID: {{ transaction.ID }}, Amount: {{ transaction.TAmount }}</li>
+      {% endfor %}
+    </ul>
+    <br>
     <a href="{% url 'index' %}">Home Page</a>
     <br>
     <a href="{% url 'Buy_Stocks' %}">Buy Stocks</a>
