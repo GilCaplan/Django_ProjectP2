@@ -7,11 +7,44 @@
     <title>Buy a stock</title>
 </head>
 <body>
-    <H1>Buy Stocks page</H1>
+    <h1>Buy Stocks page</h1>
+
+    <h2>Buy Stocks Form</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Submit</button>
+    </form>
+
+    {% if error_message %}
+        <p>{{ error_message }}</p>
+    {% endif %}
+
+    <br>
+    <h2>Links to Other Pages</h2>
     <a href="{% url 'index' %}">Home Page</a>
     <br>
     <a href="{% url 'Add_Transaction' %}">Add Transaction</a>
     <br>
     <a href="{% url 'Query_results' %}">Query Results</a>
+
+    <br><br>
+    <h2>Last 10 Buying Actions</h2>
+    <table>
+        <tr>
+            <th>Investor</th>
+            <th>Company</th>
+            <th>Shares</th>
+            <th>Date</th>
+        </tr>
+        {% for action in last_buying_actions %}
+            <tr>
+                <td>{{ action.investor }}</td>
+                <td>{{ action.company }}</td>
+                <td>{{ action.shares }}</td>
+                <td>{{ action.date }}</td>
+            </tr>
+        {% endfor %}
+    </table>
 </body>
 </html>
