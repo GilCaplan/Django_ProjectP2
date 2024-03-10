@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from .models import Transactions
+from .models import Transactions, Stock
 # Create your views here.
 
 
@@ -12,15 +12,23 @@ def errorPage(request):
 
 
 def Add_Transaction(request):
-    input_ID = request.POST.get('ID')
+    input_ID = request.POST.get('id')
+    tsum = request.POST.get('transactionSum')
+    try:
+        tsum = int(tsum)
+        flag = tsum <= 0
+    except (ValueError, TypeError):
+        # Handle the case where the input is not a valid integer or is None
+        flag = False
 
-    if input_ID is not None and not Transactions.objects.filter(ID=input_ID).exists():
+
+    if input_ID is not None and not Transactions.objects.filter(id=input_ID).exists() or flag:
         return render(request, 'errorPage.html')  # Create a template for id_exists_error.html
     if input_ID is not None:
-        # If the ID doesn't exist, create a new transaction
         transaction = Transactions()
         transaction.id_id = input_ID
-        transaction.tamount = request.POST.get('transactionSum')
+        transaction.tamount = tsum
+        transaction.tdate = Stock.objects.order_by('-tdate').first().tdate
         transaction.save()
 
     recent_transactions = Transactions.objects.order_by('-tdate')[:10]
