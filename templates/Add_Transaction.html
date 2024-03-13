@@ -19,7 +19,7 @@
 <form method="POST" action="{% url 'Add_Transaction' %}">
     {% csrf_token %}
     <label for="id">ID:</label>
-    <input type="text" id="id" name="id" placeholder="Enter your ID" required><br>
+    <input type="number" id="id" name="id" placeholder="Enter your ID" required><br>
     <label for="transactionSum">Transaction Sum:</label>
     <input type="number" id="transactionSum" name="transactionSum" placeholder="Enter amount" required><br>
     <input type="submit" value="Submit">

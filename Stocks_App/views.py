@@ -63,7 +63,7 @@ def Buy_Stocks(request):
 
     purchase = Buying()
     purchase.bquantity = BQuantity
-    purchase.id = investor
+    purchase.id_id = investor
     purchase.pk = Stock.objects.get(symbol=company.symbol, tdate=date).pk
     purchase.tdate_id = date
     purchase.symbol_id = company
