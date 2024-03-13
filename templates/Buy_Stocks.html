@@ -29,31 +29,34 @@
     {% endif %}
 
     <br>
-    <h2>Links to Other Pages</h2>
+
+    <h2>Last 10 Stock Buys:</h2>
+    <table>
+        <tr>
+            <th>Date</th>
+            <th>Investor ID</th>
+            <th>Symbol</th>
+            <th>Quantity</th>
+        </tr>
+        {% for action in recent_transactions %}
+            <tr>
+                <td>{{ action.pk }}</td>
+                <td>{{ action.id.id }}</td>
+                <td>{{ action.symbol_id  }}</td>
+                <td>{{ action.bquantity }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+
+    <br>
+
     <a href="{% url 'index' %}">Home Page</a>
     <br>
-    <a href="{% url 'Add_Transaction' %}">Add Transaction</a>
-    <br>
     <a href="{% url 'Query_results' %}">Query Results</a>
+    <br>
+    <a href="{% url 'Add_Transaction' %}">Add Transaction</a>
 
     <br><br>
-    <h2>Last 10 Buying Actions</h2>
-    <!-- Corrected template code -->
-<table>
-    <tr>
-        <th>Date</th>
-        <th>Investor ID</th>
-        <th>Symbol</th>
-        <th>Quantity</th>
-    </tr>
-    {% for action in recent_transactions %}
-        <tr>
-            <td>{{ action.pk }}</td>
-            <td>{{ action.id.id }}</td>
-            <td>{{ action.symbol_id  }}</td>
-            <td>{{ action.bquantity }}</td>
-        </tr>
-    {% endfor %}
-</table>
+
 </body>
 </html>
