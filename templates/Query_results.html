@@ -7,10 +7,11 @@
     <link rel="stylesheet" href="{% static 'style.css' %}">
 </head>
 <body>
-    <h1>Query Results Page</h1>
-    
-    <table>
-        <caption>Query 1:</caption>
+<div class="outerDiv">
+    <div class="innerDiv">
+        <h1> Query Results Page </h1>
+    <table class="gil">
+        <caption> <u> Query 1: </u> </caption>
         <thead>
             <tr>
                 <th>Name</th>
@@ -27,8 +28,8 @@
         </tbody>
     </table>
     <br><br>
-    <table>
-        <caption>Query 2:</caption>
+    <table class="gil">
+        <caption> <u> Query 2: </u> </caption>
         <thead>
             <tr>
                 <th>Symbol</th>
@@ -47,8 +48,8 @@
         </tbody>
     </table>
     <br><br>
-    <table>
-        <caption>Query 3:</caption>
+    <table class="gil">
+        <caption> <u> Query 3: </u> </caption>
         <thead>
             <tr>
                 <th>Symbol</th>
@@ -65,8 +66,13 @@
         </tbody>
     </table>
     <br><br>
-    <a href="{% url 'index' %}">Home Page</a><br>
-    <a href="{% url 'Add_Transaction' %}">Add Transaction</a><br>
-    <a href="{% url 'Buy_Stocks' %}">Buy Stocks</a>
+    <div class="donny">
+        <a href="{% url 'index' %}">Home Page</a><br>
+        <a href="{% url 'Add_Transaction' %}">Add Transaction</a><br>
+        <a href="{% url 'Buy_Stocks' %}">Buy Stocks</a>
+    </div>
+    </div>
+</div>
+
 </body>
 </html>

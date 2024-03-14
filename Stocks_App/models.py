@@ -11,7 +11,8 @@ from django.db import models
 class Buying(models.Model):
     tdate = models.OneToOneField('Stock', models.DO_NOTHING, db_column='tDate', primary_key=True)
     id = models.ForeignKey('Investor', models.DO_NOTHING, db_column='ID')
-    symbol = models.ForeignKey('Stock', models.DO_NOTHING, db_column='Symbol', to_field='symbol', related_name='buying_symbol_set')
+    # symbol = models.ForeignKey('Stock', models.DO_NOTHING, db_column='Symbol', to_field='symbol', related_name='buying_symbol_set')
+    symbol = models.ForeignKey('Stock', models.DO_NOTHING, db_column='Symbol', related_name='+')
     bquantity = models.IntegerField(db_column='BQuantity', blank=True, null=True)
 
     class Meta:
@@ -57,7 +58,6 @@ class Transactions(models.Model):
     tdate = models.DateField(db_column='tDate', primary_key=True)  # Field name made lowercase. The composite primary key (tDate, ID) found, that is not supported. The first column is selected.
     id = models.ForeignKey(Investor, models.DO_NOTHING, db_column='ID')  # Field name made lowercase.
     tamount = models.IntegerField(db_column='TAmount', blank=True, null=True)  # Field name made lowercase.
-
     class Meta:
         managed = False
         db_table = 'Transactions'

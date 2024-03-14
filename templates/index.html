@@ -7,13 +7,22 @@
     <title>Stocks App Website</title>
 </head>
 <body> 
-    <h1>HomePage</h1>
-    <img src="{% static "stockHPPhoto.jpeg" %}" alt="stocks photo">
+    <h1>Stocks App Website</h1>
+    <div class="donny">
+        <img src="{% static "stockHPPhoto.jpeg" %}" alt="stocks photo">
+    </div>
     <h2>Raque And Gil's Stock website where you can make the right decisions!</h2>
-    <a href="{% url 'Query_results' %}">Query Results</a>
-    <br>
-    <a href="{% url 'Add_Transaction' %}">Add Transaction</a>
-    <br>
-    <a href="{% url 'Buy_Stocks' %}">Buy Stocks</a>
+    <div class="donny">
+        <a href="{% url 'Query_results' %}">Query Results</a>
+    </div>
+        <br>
+    <div class="donny">
+        <a href="{% url 'Add_Transaction' %}">Add Transaction</a>
+    </div>
+        <br>
+    <div class="donny">
+        <a href="{% url 'Buy_Stocks' %}">Buy Stocks</a>
+    </div>
+    
 </body>
 </html>

@@ -1,4 +1,7 @@
+import random
+
 from django.shortcuts import render, redirect
+from datetime import timedelta
 from .models import Transactions, Stock, Buying, Company, Investor
 from django.db import connection
 from django import forms
@@ -7,7 +10,6 @@ import datetime
 
 
 # Create your views here.
-
 
 def index(request):
     return render(request, 'index.html')
@@ -27,14 +29,20 @@ def Add_Transaction(request):
         # Handle the case where the input is not a valid integer or is None
         flag = False
 
+    datetime = Stock.objects.order_by('-tdate').first().tdate
+
     if input_ID is not None and not Transactions.objects.filter(id=input_ID).exists() or flag:
-        return render(request, 'errorPage.html')  # Create a template for id_exists_error.html
+        return render(request, 'Add_Transaction.html', {'errormessage':'user already has a transaction on this day'})  # Create a template for id_exists_error.html
+
+    if Transactions.objects.filter(tdate=datetime, id=input_ID).exists():
+        return render(request, 'Add_Transaction.html', {'errormessage':'user already has a transaction on this day'})  # Create a template for id_exists_error.html
+
     if input_ID is not None:
-        transaction = Transactions()
-        transaction.id_id = input_ID
-        transaction.tamount = tsum
-        transaction.tdate = Stock.objects.order_by('-tdate').first().tdate
-        transaction.save()
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                             INSERT INTO Transactions(tdate,ID,TAmount) VALUES (%s,%s,%s)
+                            ;
+                            """, (datetime, input_ID, tsum))
 
     recent_transactions = Transactions.objects.order_by('-tdate')[:10]
     return render(request, 'Add_Transaction.html', {'recent_transactions': recent_transactions})
@@ -71,7 +79,7 @@ def Buy_Stocks(request):
         error_message = "Investor cannot make multiple purchases for the same company on the same day"
         return render(request, 'buy_stocks.html', {'error_message': error_message, 'recent_transactions': action})
 
-
+    datetime = Stock.objects.order_by('-tdate').first().tdate
     cost = price * BQuantity
     if investor.amount < cost:
         error_message = "Investor does not have enough money to make this purchase."
@@ -80,15 +88,11 @@ def Buy_Stocks(request):
     investor.amount -= cost
     investor.save()
 
-    purchase = Buying()
-    purchase.bquantity = BQuantity
-    purchase.id_id = investor
-    purchase.pk = Stock.objects.get(symbol=company.symbol, tdate=date).pk
-    purchase.tdate_id = date
-    purchase.symbol_id = company
-
-    purchase.symbol = Stock(symbol=Company.objects.get(pk=symbol))
-    purchase.save()
+    with connection.cursor() as cursor:
+        cursor.execute("""
+                         INSERT INTO Buying(tdate,ID, Symbol, BQuantity) VALUES (%s,%s,%s,%s)
+                        ;
+                        """, (datetime, ID, symbol, BQuantity))
 
     return render(request, 'buy_stocks.html', {'recent_transactions': action})
 
@@ -145,3 +149,4 @@ def dictfetchall(cursor):
     "Return all rows from a cursor as a dict"
     columns = [col[0] for col in cursor.description]
     return [dict(zip(columns, row)) for row in cursor.fetchall()]
+
