@@ -1,5 +1,6 @@
 body{
     background-color: lightblue;
+    margin: auto;
 }
 th, td {
     border: 1px solid #dddddd;
@@ -13,11 +14,13 @@ thead th {
 }
 
 h1{
-    color: crimson;
+    color: blue;
+    text-align: center;
 }
 
 h2{
     color: darkslategrey;
+    text-align: center;
 }
 
 .rectangle{
