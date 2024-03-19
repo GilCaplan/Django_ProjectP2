@@ -18,6 +18,11 @@ thead th {
     background-color: #778eec;
 }
 
+.hodi {
+    text-align: center;
+    margin-top: 20px; /* Adjust as needed for vertical alignment */
+}
+
 .raque {
     display: inline-block; /* Adjust display property */
     background-color: #778eec;

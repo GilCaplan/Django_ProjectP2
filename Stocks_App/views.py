@@ -26,12 +26,12 @@ def Add_Transaction(request):
         flag = False
 
     datetime = Stock.objects.order_by('-tdate').first().tdate
-
+    recent_transactions = Transactions.objects.order_by('-tdate')[:10]
     if input_ID is not None and not Transactions.objects.filter(id=input_ID).exists() or flag:
-        return render(request, 'Add_Transaction.html', {'errormessage':'user already has a transaction on this day'})  # Create a template for id_exists_error.html
+        return render(request, 'Add_Transaction.html', {'errormessage': 'user doesn\'t exist', 'recent_transactions': recent_transactions})  # Create a template for id_exists_error.html
 
     if Transactions.objects.filter(tdate=datetime, id=input_ID).exists():
-        return render(request, 'Add_Transaction.html', {'errormessage':'user already has a transaction on this day'})  # Create a template for id_exists_error.html
+        return render(request, 'Add_Transaction.html', {'errormessage': 'user already has a transaction on this day', 'recent_transactions': recent_transactions})  # Create a template for id_exists_error.html
 
     if input_ID is not None:
         with connection.cursor() as cursor:
@@ -45,50 +45,51 @@ def Add_Transaction(request):
 
 
 def Buy_Stocks(request):
-    ID = request.POST.get('id')
-    symbol = request.POST.get('company')
-    BQuantity = request.POST.get('quantity')
     action = Buying.objects.order_by('-tdate')[:10]
+    if request.method == 'POST':
+        ID = request.POST.get('id')
+        symbol = request.POST.get('company')
+        BQuantity = request.POST.get('quantity')
 
-    try:
-        investor = Investor.objects.get(id=ID)
-        company = Company.objects.get(symbol=symbol)
-    except Investor.DoesNotExist:
-        error_message = "Investor does not exist"
-        return render(request, 'buy_stocks.html', {'error_message': error_message, 'recent_transactions': action})
-    except Company.DoesNotExist:
-        error_message = "Company does not exist"
-        return render(request, 'buy_stocks.html', {'error_message': error_message, 'recent_transactions': action})
+        try:
+            investor = Investor.objects.get(id=ID)
+            company = Company.objects.get(symbol=symbol)
+        except Investor.DoesNotExist:
+            error_message = "Investor does not exist"
+            return render(request, 'buy_stocks.html', {'error_message': error_message, 'recent_transactions': action})
+        except Company.DoesNotExist:
+            error_message = "Company does not exist"
+            return render(request, 'buy_stocks.html', {'error_message': error_message, 'recent_transactions': action})
 
-    if BQuantity is None or int(BQuantity) <= 0:
-        return render(request, 'buy_stocks.html', {'recent_transactions': action})
+        if BQuantity is None or int(BQuantity) <= 0:
+            return render(request, 'buy_stocks.html', {'recent_transactions': action})
 
-    BQuantity = int(BQuantity)
-    company = Company.objects.get(pk=symbol)
-    date = Stock.objects.order_by('-tdate').first().tdate
-    try:
-        stock = Stock.objects.get(symbol=company.symbol, tdate=date)
-        price = stock.price
-    except Stock.DoesNotExist:
-        price = 0
-    if Buying.objects.filter(id=ID, symbol=symbol, tdate=date).exists():
-        error_message = "Investor cannot make multiple purchases for the same company on the same day"
-        return render(request, 'buy_stocks.html', {'error_message': error_message, 'recent_transactions': action})
+        BQuantity = int(BQuantity)
+        company = Company.objects.get(pk=symbol)
+        date = Stock.objects.order_by('-tdate').first().tdate
+        try:
+            stock = Stock.objects.get(symbol=company.symbol, tdate=date)
+            price = stock.price
+        except Stock.DoesNotExist:
+            price = 0
+        if Buying.objects.filter(id=ID, symbol=symbol, tdate=date).exists():
+            error_message = "Investor cannot make multiple purchases for the same company on the same day"
+            return render(request, 'buy_stocks.html', {'error_message': error_message, 'recent_transactions': action})
 
-    datetime = Stock.objects.order_by('-tdate').first().tdate
-    cost = price * BQuantity
-    if investor.amount < cost:
-        error_message = "Investor does not have enough money to make this purchase."
-        return render(request, 'buy_stocks.html', {'error_message': error_message, 'recent_transactions': action})
+        datetime = Stock.objects.order_by('-tdate').first().tdate
+        cost = price * BQuantity
+        if investor.amount < cost:
+            error_message = "Investor does not have enough money to make this purchase."
+            return render(request, 'buy_stocks.html', {'error_message': error_message, 'recent_transactions': action})
 
-    investor.amount -= cost
-    investor.save()
+        investor.amount -= cost
+        investor.save()
 
-    with connection.cursor() as cursor:
-        cursor.execute("""
-                         INSERT INTO Buying(tdate,ID, Symbol, BQuantity) VALUES (%s,%s,%s,%s)
-                        ;
-                        """, (datetime, ID, symbol, BQuantity))
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                             INSERT INTO Buying(tdate,ID, Symbol, BQuantity) VALUES (%s,%s,%s,%s)
+                            ;
+                            """, (datetime, ID, symbol, BQuantity))
 
     return render(request, 'buy_stocks.html', {'recent_transactions': action})
 

@@ -26,6 +26,11 @@
         <input type="submit" value="Submit">
     </form>
 </div>
+<div class="hodi">
+    {% if errormessage %}
+        <p>{{ errormessage }}</p>
+    {% endif %}
+</div>
 
 </body>
 </html>
@@ -51,11 +56,6 @@
             {% endfor %}
         </tbody>
     </table>
-    <div class="donny">
-        {% if error_message %}
-            <p>{{ error_message }}</p>
-        {% endif %}
-    </div>
     <br>
     <div class="donny">
         <a href="{% url 'index' %}">Home Page</a>
