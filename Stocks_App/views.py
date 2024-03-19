@@ -15,10 +15,6 @@ def index(request):
     return render(request, 'index.html')
 
 
-def errorPage(request):
-    return render(request, 'errorPage.html')
-
-
 def Add_Transaction(request):
     input_ID = request.POST.get('id')
     tsum = request.POST.get('transactionSum')
