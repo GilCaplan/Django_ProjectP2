@@ -26,7 +26,7 @@ def Add_Transaction(request):
         flag = False
 
     datetime = Stock.objects.order_by('-tdate').first().tdate
-    recent_transactions = Transactions.objects.order_by('-tdate')[:10]
+    recent_transactions = Transactions.objects.order_by('tdate', '-id')[:10]
     if input_ID is not None and not Transactions.objects.filter(id=input_ID).exists() or flag:
         return render(request, 'Add_Transaction.html', {'errormessage': 'user doesn\'t exist', 'recent_transactions': recent_transactions})  # Create a template for id_exists_error.html
 
@@ -40,12 +40,12 @@ def Add_Transaction(request):
                             ;
                             """, (datetime, input_ID, tsum))
 
-    recent_transactions = Transactions.objects.order_by('-tdate')[:10]
+    recent_transactions = Transactions.objects.order_by('-tdate', '-id')[:10]
     return render(request, 'Add_Transaction.html', {'recent_transactions': recent_transactions})
 
 
 def Buy_Stocks(request):
-    action = Buying.objects.order_by('-tdate')[:10]
+    action = Buying.objects.order_by('-tdate', '-id', 'symbol')[:10]
     if request.method == 'POST':
         ID = request.POST.get('id')
         symbol = request.POST.get('company')
@@ -54,11 +54,14 @@ def Buy_Stocks(request):
         try:
             investor = Investor.objects.get(id=ID)
             company = Company.objects.get(symbol=symbol)
+        except Investor.DoesNotExist and Company.DoesNotExist:
+            error_message = "Investor and Company do not exist!"
+            return render(request, 'buy_stocks.html', {'error_message': error_message, 'recent_transactions': action})
         except Investor.DoesNotExist:
-            error_message = "Investor does not exist"
+            error_message = "Investor does not exist!"
             return render(request, 'buy_stocks.html', {'error_message': error_message, 'recent_transactions': action})
         except Company.DoesNotExist:
-            error_message = "Company does not exist"
+            error_message = "Company does not exist!"
             return render(request, 'buy_stocks.html', {'error_message': error_message, 'recent_transactions': action})
 
         if BQuantity is None or int(BQuantity) <= 0:
@@ -90,8 +93,9 @@ def Buy_Stocks(request):
                              INSERT INTO Buying(tdate,ID, Symbol, BQuantity) VALUES (%s,%s,%s,%s)
                             ;
                             """, (datetime, ID, symbol, BQuantity))
-
+    action = Buying.objects.order_by('-tdate', '-id', 'symbol')[:10]
     return render(request, 'buy_stocks.html', {'recent_transactions': action})
+
 
 def Query_results(request):
     with connection.cursor() as cursor:
