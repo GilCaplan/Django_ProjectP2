@@ -11,7 +11,7 @@
 
     <h2>Buy Stocks Form</h2>
     <div class="ben">
-        <form method="post" class="raque">
+        <form method="post" class="raque" >
             {% csrf_token %}
             <label for="id">ID:</label>
             <input type="number" id="id" name="id" placeholder="ID:" required><br>
@@ -32,7 +32,7 @@
     <br>
 
     <h2>Last 10 Stock Buys:</h2>
-    <table class="gil">
+    <table class="gil" style="border: 3px solid #000000;">
         <tr>
             <th>Date</th>
             <th>Investor ID</th>
