@@ -12,29 +12,42 @@ def index(request):
 
 
 def Add_Transaction(request):
-    input_ID = request.POST.get('id')
-    tsum = request.POST.get('transactionSum')
-    try:
-        tsum = int(tsum)
-        flag = tsum <= 0
-    except (ValueError, TypeError):
-        # Handle the case where the input is not a valid integer or is None
-        flag = False
+    if request.method == 'POST':
+        input_ID = request.POST.get('id')
+        tsum = request.POST.get('transactionSum')
+        itsum = 0
+        try:
+            itsum = int(tsum)
+            flag = tsum <= 0
+        except (ValueError, TypeError):
+            # Handle the case where the input is not a valid integer or is None
+            flag = False
+        datetime = Stock.objects.order_by('-tdate').first().tdate
+        recent_transactions = Transactions.objects.order_by('tdate', '-id')[:10]
+        if itsum <= 0:
+            return render(request, 'Add_Transaction.html', {'errormessage': 'negative or empty amount entered',
+                                                            'recent_transactions': recent_transactions})  # Create a template for id_exists_error.html
 
-    datetime = Stock.objects.order_by('-tdate').first().tdate
-    recent_transactions = Transactions.objects.order_by('tdate', '-id')[:10]
-    if input_ID is not None and not Transactions.objects.filter(id=input_ID).exists() or flag:
-        return render(request, 'Add_Transaction.html', {'errormessage': 'user doesn\'t exist', 'recent_transactions': recent_transactions})  # Create a template for id_exists_error.html
+        if input_ID is not None and not Transactions.objects.filter(id=input_ID).exists() or flag:
+            return render(request, 'Add_Transaction.html', {'errormessage': 'user doesn\'t exist', 'recent_transactions': recent_transactions})  # Create a template for id_exists_error.html
 
-    if Transactions.objects.filter(tdate=datetime, id=input_ID).exists():
-        return render(request, 'Add_Transaction.html', {'errormessage': 'user already has a transaction on this day', 'recent_transactions': recent_transactions})  # Create a template for id_exists_error.html
+        if Transactions.objects.filter(tdate=datetime, id=input_ID).exists():
+            return render(request, 'Add_Transaction.html', {'errormessage': 'user already has a transaction on this day', 'recent_transactions': recent_transactions})  # Create a template for id_exists_error.html
 
-    if input_ID is not None:
-        with connection.cursor() as cursor:
-            cursor.execute("""
-                             INSERT INTO Transactions(tdate,ID,TAmount) VALUES (%s,%s,%s)
-                            ;
-                            """, (datetime, input_ID, tsum))
+        if input_ID is not None:
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                                 INSERT INTO Transactions(tdate,ID,TAmount) VALUES (%s,%s,%s)
+                                ;
+                                """, (datetime, input_ID, tsum))
+        recent_transactions = Transactions.objects.order_by('-tdate', '-id')[:10]
+        try:
+            investor = Investor.objects.get(id=input_ID)
+            investor.amount += itsum
+            investor.save()
+        except Investor.DoesNotExist:
+            error_message = "Investor does not exist!"
+            return render(request, 'buy_stocks.html', {'error_message': error_message, 'recent_transactions': recent_transactions})
 
     recent_transactions = Transactions.objects.order_by('-tdate', '-id')[:10]
     return render(request, 'Add_Transaction.html', {'recent_transactions': recent_transactions})
@@ -105,7 +118,7 @@ def Query_results(request):
             SELECT VarInv.Name, ROUND(SUM(Buying.BQuantity * Stock.Price), 3) AS spent
             FROM VarInv, Buying, Stock, Investor
             WHERE VarInv.Name = Investor.Name AND Investor.ID = Buying.ID
-            AND Stock.Symbol = Buying.Symbol
+            AND Stock.Symbol = Buying.Symbol AND Stock.tDate = Buying.tDate
             GROUP BY VarInv.Name
             ORDER BY spent DESC;
         """)
